@@ -89,6 +89,7 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
         <configuration>
           <encoding>UTF-8</encoding>
         </configuration>

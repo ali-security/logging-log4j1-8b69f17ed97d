@@ -1,0 +1,61 @@
+name: seal-build
+
+# Upstream log4j 1.2 has no GitHub Actions CI. This workflow reproduces the
+# project's own Maven build (pom.xml): `mvn verify` compiles for -source/-target
+# 1.4, runs the Ant regression suite (tests/build.xml target runAll) through the
+# maven-antrun-plugin `runAll` execution bound to the test phase, and packages
+# the OSGi bundle jar. It runs inside the maven:3-jdk-7 image (OpenJDK 7,
+# Maven 3.6), the oldest JDK line whose TLS stack still reaches Maven Central.
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-filter:
+        description: "Ant target(s) from tests/build.xml to run instead of runAll (e.g. Socket); empty runs the full suite"
+        required: false
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test (mvn verify)
+        env:
+          TEST_FILTER: ${{ inputs.test-filter }}
+        run: |
+          set -o pipefail
+          if [ -n "$TEST_FILTER" ]; then
+            # Scope the antrun `runAll` execution to the selected Ant targets only.
+            sed -i -E "s|<target name=\"runAll\" depends=\"[^\"]*\"/>|<target name=\"runAll\" depends=\"${TEST_FILTER}\"/>|" tests/build.xml
+            grep -n '<target name="runAll"' tests/build.xml
+          fi
+          # Run as the runner's (non-root) uid: as root, FileAppender can create
+          # /xyz/ so ErrorHandlerTestCase.test2's "unwritable file" fallback never fires.
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp/home -e MAVEN_CONFIG=/tmp/home/.m2 \
+            -v "$PWD":/src -w /src maven:3-jdk-7 \
+            mvn -B clean verify -Dmaven.site.skip=true -Duser.home=/tmp/home 2>&1 | tee build.log
+
+      - name: Test summary
+        run: |
+          echo "Per-suite JUnit results (Ant junit plain formatter):"
+          awk '/\[junit\] Testsuite:/ {suite=$0; next}
+               suite != "" && /\[junit\] Tests run:/ {print suite " -> " $0; suite=""}' build.log
+          awk 'prev ~ /\[junit\] Testsuite:/ && /\[junit\] Tests run:/ {
+                 gsub(",", ""); for (i=1;i<=NF;i++) {
+                   if ($i=="run:") r+=$(i+1); if ($i=="Failures:") f+=$(i+1); if ($i=="Errors:") e+=$(i+1) } }
+               {prev=$0}
+               END {printf "TOTAL: Tests run: %d, Passed: %d, Failures: %d, Errors: %d\n", r, r-f-e, f, e; if (r==0 || f+e>0) exit 1}' build.log
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: log4j-jar
+          path: |
+            target/log4j-*.jar
+            !target/log4j-*-sources.jar
+            !target/log4j-*-javadoc.jar
+          if-no-files-found: error
