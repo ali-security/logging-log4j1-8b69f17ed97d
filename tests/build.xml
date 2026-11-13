@@ -180,7 +180,8 @@
                                      ErrorHandler,Rewrite,
                                      HardenedLoggingEventInputStream,
                                      JNDIUtil, JMSAppender,
-                                     HardenedObjectInputStream, LoggingReceiver"/>
+                                     HardenedObjectInputStream, LoggingReceiver,
+                                     NTEventLogAppenderDllLoad"/>
 
   <!-- ================================================================= -->
   <!-- Longer unit tests                                                 -->
@@ -492,7 +493,17 @@
       <classpath refid="tests.classpath"/>
       <formatter type="plain" usefile="false"/>
       <test name="org.apache.log4j.nt.NTEventLogAppenderTest" />
+      <test name="org.apache.log4j.nt.NTEventLogAppenderDllPathTest" />
     </junit>
+  </target>
+
+  <target name="NTEventLogAppenderDllLoad" depends="build">
+      <junit printsummary="yes" fork="yes"
+        haltonfailure="${haltonfailure}" dir="${basedir}">
+        <classpath refid="tests.classpath"/>
+        <formatter type="plain" usefile="false"/>
+        <test name="org.apache.log4j.nt.NTEventLogAppenderDllLoadTest" />
+      </junit>
   </target>
 
   <target name="HardenedObjectInputStream" depends="build">
