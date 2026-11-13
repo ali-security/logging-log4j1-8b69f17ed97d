@@ -172,7 +172,8 @@
                                      OptionConverter, BoundedFIFO,
                                      CyclicBuffer, OR,
                                      LevelMatchFilter, PatternParser, 
-                                     ErrorHandler,Rewrite"/>
+                                     ErrorHandler,Rewrite,
+                                     HardenedLoggingEventInputStream"/>
 
   <!-- ================================================================= -->
   <!-- Longer unit tests                                                 -->
@@ -475,6 +476,15 @@
         <classpath refid="tests.classpath"/>
         <formatter type="plain" usefile="false"/>
         <test name="org.apache.log4j.net.SocketAppenderTest" />
+      </junit>
+  </target>
+
+  <target name="HardenedLoggingEventInputStream" depends="build">
+      <junit printsummary="yes" fork="yes"
+        haltonfailure="${haltonfailure}" dir="${basedir}">
+        <classpath refid="tests.classpath"/>
+        <formatter type="plain" usefile="false"/>
+        <test name="org.apache.log4j.net.HardenedLoggingEventInputStreamTest" />
       </junit>
   </target>
 
