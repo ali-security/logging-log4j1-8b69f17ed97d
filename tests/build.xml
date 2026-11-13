@@ -36,6 +36,10 @@
   <property name="checkstyle.jar" location="${m2_repo}/checkstyle/checkstyle/${checkstyle.version}/checkstyle-${checkstyle.version}.jar"/>
   <property name="javamail.jar" location="${m2_repo}/javax/mail/mail/1.4.3/mail-1.4.3.jar"/>
   <property name="activation.jar" location="${m2_repo}/javax/activation/activation/1.1/activation-1.1.jar"/>
+  <property name="geronimo-jms.jar"
+         value="${m2_repo}/org/apache/geronimo/specs/geronimo-jms_1.1_spec/1.0/geronimo-jms_1.1_spec-1.0.jar"/>
+  <available property="jms.jar" value="${geronimo-jms.jar}" file="${geronimo-jms.jar}"/>
+  <property name="jms.jar" location="${m2_repo}/javax/jms/jms/1.1/jms-1.1.jar"/>
   <property name="junit.version" value="3.8.1"/>
   <property name="junit.jar" location="${m2_repo}/junit/junit/${junit.version}/junit-${junit.version}.jar"/>
 
@@ -71,6 +75,7 @@
     <pathelement location="${junit.jar}"/>
     <pathelement location="${javamail.jar}"/>
     <pathelement location="${activation.jar}"/>
+    <pathelement location="${jms.jar}"/>
     <pathelement path="${java.class.path}"/>
   </path>
 
@@ -173,7 +178,8 @@
                                      CyclicBuffer, OR,
                                      LevelMatchFilter, PatternParser, 
                                      ErrorHandler,Rewrite,
-                                     HardenedLoggingEventInputStream"/>
+                                     HardenedLoggingEventInputStream,
+                                     JNDIUtil, JMSAppender"/>
 
   <!-- ================================================================= -->
   <!-- Longer unit tests                                                 -->
@@ -345,6 +351,24 @@
       <classpath refid="tests.classpath"/>
       <formatter type="plain" usefile="false" />
       <test name="org.apache.log4j.xml.XMLLayoutTestCase" />
+    </junit>
+  </target>
+
+  <target name="JNDIUtil" depends="build">
+    <junit printsummary="yes" fork="yes"
+        haltonfailure="${haltonfailure}" dir="${basedir}">
+      <classpath refid="tests.classpath"/>
+      <formatter type="plain" usefile="false" />
+      <test name="org.apache.log4j.net.JNDIUtilTest" />
+    </junit>
+  </target>
+
+  <target name="JMSAppender" depends="build">
+    <junit printsummary="yes" fork="yes"
+        haltonfailure="${haltonfailure}" dir="${basedir}">
+      <classpath refid="tests.classpath"/>
+      <formatter type="plain" usefile="false" />
+      <test name="org.apache.log4j.net.JMSAppenderTest" />
     </junit>
   </target>
 
