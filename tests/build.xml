@@ -179,7 +179,8 @@
                                      LevelMatchFilter, PatternParser, 
                                      ErrorHandler,Rewrite,
                                      HardenedLoggingEventInputStream,
-                                     JNDIUtil, JMSAppender"/>
+                                     JNDIUtil, JMSAppender,
+                                     HardenedObjectInputStream, LoggingReceiver"/>
 
   <!-- ================================================================= -->
   <!-- Longer unit tests                                                 -->
@@ -492,6 +493,24 @@
       <formatter type="plain" usefile="false"/>
       <test name="org.apache.log4j.nt.NTEventLogAppenderTest" />
     </junit>
+  </target>
+
+  <target name="HardenedObjectInputStream" depends="build">
+      <junit printsummary="yes" fork="yes"
+        haltonfailure="${haltonfailure}" dir="${basedir}">
+        <classpath refid="tests.classpath"/>
+        <formatter type="plain" usefile="false"/>
+        <test name="org.apache.log4j.net.HardenedObjectInputStreamTest" />
+      </junit>
+  </target>
+
+  <target name="LoggingReceiver" depends="build">
+      <junit printsummary="yes" fork="yes"
+        haltonfailure="${haltonfailure}" dir="${basedir}">
+        <classpath refid="tests.classpath"/>
+        <formatter type="plain" usefile="false"/>
+        <test name="org.apache.log4j.chainsaw.LoggingReceiverTest" />
+      </junit>
   </target>
 
   <target name="Socket" depends="build">
